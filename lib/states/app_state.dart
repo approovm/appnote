@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:io';
 import 'dart:developer';
 
 import 'package:appwrite/appwrite.dart';
@@ -9,20 +9,32 @@ class NoteDataState extends ChangeNotifier {
   Client appwriteClient;
   Database database;
   Account account;
-  String _projectId = '5ece91e405eaf';
   String _userId;
-  String _noteCollectionId = '5ece925536a1d';
 
-  List<NoteModel> _noteList = [];
+  // @TODO Get this values from a local configuration or from the system environment
+  String _projectId = '6179b11f507a2';
+  String _noteCollectionId = '6179b1ae528cd';
 
-  List<NoteModel> get totalNoteList => _noteList;
+  List<dynamic> _noteList = [];
+
+  List<String> _write;
+
+  List<String> _read;
+
+  List<dynamic> get totalNoteList => _noteList;
 
   init() {
+    var apiUrl = 'http://localhost/v1';
+
+    //10.0.2.2 is Android emulator's proxy to access Appwrite server on localhost
+    if (Platform.isAndroid) {
+      apiUrl = 'http://10.0.2.2/v1';
+    }
+
     appwriteClient = Client(selfSigned: true);
     appwriteClient
-        .setEndpoint('http://10.0.2.2/v1')//// 10.0.2.2 is Android emulator's proxy to access Appwrite server on localhost
-        .setProject(_projectId)
-        .selfSigned;
+        .setEndpoint(apiUrl)
+        .setProject(_projectId);
     database = Database(appwriteClient);
     account = Account(appwriteClient);
   }
@@ -34,8 +46,17 @@ class NoteDataState extends ChangeNotifier {
     );
 
     result.then((response) {
+      _userId = response.userId;
+
+      _read = [
+        'user:$_userId'
+      ];
+
+      _write = [
+        'user:$_userId'
+      ];
+
       getNoteData();
-      log(response.toString());
     }).catchError((error) {
       log(error.toString());
     });
@@ -49,6 +70,7 @@ class NoteDataState extends ChangeNotifier {
     );
 
     result.then((response) {
+      _userId = null;
       print(response);
     }).catchError((error) {
       print(error);
@@ -62,8 +84,6 @@ class NoteDataState extends ChangeNotifier {
   getUserInfo() {
     Future result = account.get();
     result.then((response) {
-      _userId = jsonDecode(response.toString())['roles'][1].toString();
-      log(_userId);
       log(response.toString());
       getNoteData();
       notifyListeners();
@@ -77,15 +97,12 @@ class NoteDataState extends ChangeNotifier {
     Future result = database.createDocument(
       collectionId: '$_noteCollectionId',
       data: noteModel.toJson(),
-      read: ['*'],
-      write: [
-        '$_userId'
-      ], //// Disclaim, everyone can write sine I set to '*' as just demo
+      read: _read,
+      write: _write,
     );
 
     result.then((response) {
       log('Create document: ' + response.toString());
-
       getNoteData(); //// Refresh document list
     }).catchError((error) {
       log('Create document: ' + error.toString());
@@ -96,15 +113,14 @@ class NoteDataState extends ChangeNotifier {
     appwriteClient.setProject(_projectId);
     Future result = database.listDocuments(
       orderField: 'timestamp',
-      orderType: OrderType.desc,
-      collectionId: '$_noteCollectionId',
+      orderType: 'DESC',
+      collectionId: _noteCollectionId,
     );
 
     result.then((response) {
-      log('Get getNoteData: ' +
-          jsonDecode(response.toString())['documents'].toString());
-      _noteList = (jsonDecode(response.toString())['documents'] as List)
-          .map((i) => NoteModel.fromJson(i))
+      var documents = response.toMap()["documents"];
+      _noteList = documents
+          .map((note) => NoteModel.fromMap(note["data"]))
           .toList();
       notifyListeners();
     }).catchError((error) {
@@ -124,10 +140,8 @@ class NoteDataState extends ChangeNotifier {
       documentId: noteModel.id,
       collectionId: '$_noteCollectionId',
       data: noteModel.toJson(),
-      read: ['*'],
-      write: [
-        '$_userId'
-      ], //// Disclaim, everyone can write sine I set to '*' as just demo
+      read: _read,
+      write: _write,
     );
 
     result.then((response) {

@@ -14,13 +14,13 @@ class NoteModel {
       this.lastUpdate,
       this.isDone = false});
 
-  NoteModel.fromJson(Map<dynamic, dynamic> json) {
-    id = json["\$id"];
-    title = json['title'];
-    message = json['message'];
-    timestamp = json['timestamp'];
-    lastUpdate = json['lastUpdate'];
-    isDone = json['isDone'];
+  NoteModel.fromMap(Map<String, dynamic> map) {
+    id = map["\$id"];
+    title = map['title'];
+    message = map['message'];
+    timestamp = map['timestamp'];
+    lastUpdate = map['lastUpdate'];
+    isDone = map['isDone'];
   }
 
   Map<dynamic, dynamic> toJson() {

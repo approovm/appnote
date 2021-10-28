@@ -54,7 +54,7 @@ class _NoteFormState extends State<NoteForm> {
     } else if (widget.noteModel != null) {
       widget.noteModel.lastUpdate = DateTime.now().millisecondsSinceEpoch;
       widget.noteModel.title = titleTextController.text;
-      widget.noteModel.message = titleTextController.text;
+      widget.noteModel.message = messageTextController.text;
       Provider.of<NoteDataState>(context, listen: false).updateNoteData(
           noteModel: widget.noteModel, userId: _appState.getUserId());
     }
@@ -71,7 +71,7 @@ class _NoteFormState extends State<NoteForm> {
           widget.noteModel != null
               ? IconButton(
                   icon: Icon(
-                    Icons.close,
+                    Icons.delete_forever,
                     color: Colors.white,
                   ),
                   onPressed: () {
