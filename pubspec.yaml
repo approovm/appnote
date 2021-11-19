@@ -5,6 +5,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
+#  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -14,6 +15,9 @@ dependencies:
   appwrite: ^2.0.3
   provider: ^4.1.2
   intl: ^0.15.8
+#  approov_service_flutter_httpclient:
+#    git: https://github.com/approov/approov-service-flutter-httpclient.git
+
 
 dev_dependencies:
   flutter_test:

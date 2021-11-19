@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:developer';
 
 import 'package:appwrite/appwrite.dart';
+import 'package:appwrite/client_io.dart';
 import 'package:appwrite_example/models/note_model.dart';
 import 'package:flutter/material.dart';
 
@@ -24,14 +25,39 @@ class NoteDataState extends ChangeNotifier {
   List<dynamic> get totalNoteList => _noteList;
 
   init() {
-    var apiUrl = 'http://localhost/v1';
+    // var apiUrl = 'http://localhost/v1';
+    // var apiUrl = 'http://192.168.1.10/v1';
+    var apiUrl = 'http://192.168.43.213/v1';
+    // var apiUrl = 'http://192.168.1.76/v1';
 
     //10.0.2.2 is Android emulator's proxy to access Appwrite server on localhost
-    if (Platform.isAndroid) {
-      apiUrl = 'http://10.0.2.2/v1';
-    }
+    // if (Platform.isAndroid) {
+    //   apiUrl = 'http://10.0.2.2/v1';
+    // }
 
-    appwriteClient = Client(selfSigned: true);
+    log("API URL: ${apiUrl}");
+
+    // ALTERNATE BETWEEN THE SEVERAL TOKEN EXAMPLES TO TEST THE APPWRITE BACKEND BEHAVIOUR
+
+    // Token will expire at 2022-11-19 11:29:54
+    String tokenExample = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2Njg4NTczOTQsImlzcyI6ImN1cnJlbmN5LWNvbnZlcnRlci5kZW1vLmFwcHJvb3YuaW8ifQ.c5N6kz_jgpI4dPqLSCL6toU-GRAM6rgEdr_x5q4BhJ8";
+
+    // Expired token
+    // String tokenExample = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzczMjU4NzYsImlwIjoiMS4yLjMuNCIsImRpZCI6IkV4YW1wbGVBcHByb292VG9rZW5ESUQ9PSJ9.VvjWM04xYjmbHZgbX0YjPawUStL958-VvqbvXUq3qpg";
+
+    // Invalid token - signature will not match
+    // String tokenExample = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzczMjYwODIsImlwIjoiMS4yLjMuNCIsImRpZCI6IkV4YW1wbGVBcHByb292VG9rZW5ESUQ9PSJ9.weWsJR0QGivCSAy4k-rNT-WPdkgSn8U596rY8I0D3RU";
+
+    // @TOOD Find how to customize the HTTP Stack:
+    //         - Add method setHttpClient() and/or setIoClient() to ClientBase?
+    //         - Modify ClientIO to allow to pass a custom HttpClient or IOClient?
+    //         - Build a new ClientIO name CustomClientIO that accepts a customized HTTP stack?
+    //         - Other options?
+    appwriteClient = ClientIO(selfSigned: true);
+
+    // @TODO Remove once we support a custom HTTP Stack, that will handle this for us.
+    appwriteClient.addHeader('Approov-Token', tokenExample);
+
     appwriteClient
         .setEndpoint(apiUrl)
         .setProject(_projectId);
@@ -122,6 +148,7 @@ class NoteDataState extends ChangeNotifier {
       _noteList = documents
           .map((note) => NoteModel.fromMap(note["data"]))
           .toList();
+
       notifyListeners();
     }).catchError((error) {
       log('Get getNoteData: ' + error.toString());
