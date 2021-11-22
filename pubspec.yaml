@@ -15,8 +15,8 @@ dependencies:
   appwrite: ^2.0.3
   provider: ^4.1.2
   intl: ^0.15.8
-#  approov_service_flutter_httpclient:
-#    git: https://github.com/approov/approov-service-flutter-httpclient.git
+  approov_service_flutter_httpclient:
+    git: https://github.com/approov/approov-service-flutter-httpclient.git
 
 
 dev_dependencies:
